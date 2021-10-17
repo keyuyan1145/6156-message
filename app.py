@@ -8,6 +8,7 @@ import utils.rest_utils as rest_utils
 
 
 from application_services.imdb_artists_resource import IMDBArtistResource
+from application_services.MessageResource.message_service import MessageService
 from application_services.UsersResource.user_service import UserResource
 from database_services.RDBService import RDBService as RDBService
 
@@ -31,46 +32,50 @@ def health_check():
     return rsp
 
 
-# TODO Remove later. Solely for explanatory purposes.
 # The method take any REST request, and produces a response indicating what
 # the parameters, headers, etc. are. This is simply for education purposes.
-#
-@app.route("/api/demo/<parameter1>", methods=["GET", "POST", "PUT", "DELETE"])
-@app.route("/api/demo/", methods=["GET", "POST", "PUT", "DELETE"])
-def demo(parameter1=None):
+
+# Return all messages associated with a given conversation/inbox
+@app.route("/api/message/inbox/<inbox>", methods=["GET", "POST", "DELETE"])
+def get_conversation(inbox=None):
     """
     Returns a JSON object containing a description of the received request.
 
-    :param parameter1: The first path parameter.
+    :param inbox: inbox ID
     :return: JSON document containing information about the request.
     """
 
-    # DFF TODO -- We should wrap with an exception pattern.
-    #
+    # TODO -- We should wrap with an exception pattern.
 
     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
-    inputs = rest_utils.RESTContext(request, {"parameter1": parameter1})
+    inputs = rest_utils.RESTContext(request, {"inbox": inbox})
 
-    # DFF TODO -- We should replace with logging.
     r_json = inputs.to_json()
     msg = {
-        "/demo received the following inputs": inputs.to_json()
+        "/get_conversation received the following inputs": inputs.to_json()
     }
-    print("/api/demo/<parameter> received/returned:\n", msg)
+    logger.log("/api/message/inbox/<inbox> received/returned:\n", msg)
 
     rsp = Response(json.dumps(msg), status=200, content_type="application/json")
     return rsp
 
 
+# Return all conversation in the inbox for a given user
+@app.route("/api/message/<user>", methods=["GET"])
+def get_inbox(user):
 
-@app.route('/')
+    # logger.log("/api/event-participant/ received/returned:\n", res.to_json())
+    # rsp = Response(json.dumps(res), status=200, content_type="application/json")
+
+    res = MessageService.get_inbox_for_user(user)
+    print("[app.get_inbox] returned: ", res)
+    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    return rsp
+
+@app.route('/hello')
 def hello_world():
     return '<u>Hello World!</u>'
 
-
-@app.route('/gabrielle')
-def hello_gabrielle():
-    return '<u>Yay! Gabrielle is here!!!!!!!</u>'
 
 @app.route('/imdb/artists/<prefix>')
 def get_artists_by_prefix(prefix):
@@ -79,33 +84,12 @@ def get_artists_by_prefix(prefix):
     return rsp
 
 
-@app.route('/users', methods=['GET', 'POST'])
-def user_collection():
-    """
-    1. HTTP GET return all users.
-    2. HTTP POST with body --> create a user, i.e --> database.
-    :return:
-    """
-    res = UserResource.get_by_template(None)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-    return rsp
-
-@app.route('/users/<user_id>', methods=['GET', 'PUT', 'DELETE'])
-def specific_user(user_id):
-    """
-    1. Get a specific one by ID.
-    2. Update body and update.
-    3. Delete would ID and delete it.
-    :param user_id:
-    :return:
-    """
-    pass
-
-@app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
-def get_by_prefix(db_schema, table_name, column_name, prefix):
-    res = RDBService.get_by_prefix(db_schema, table_name, column_name, prefix)
-    rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-    return rsp
+#
+# @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
+# def get_by_prefix(db_schema, table_name, column_name, prefix):
+#     res = RDBService.get_by_prefix(db_schema, table_name, column_name, prefix)
+#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
 
 
 if __name__ == '__main__':

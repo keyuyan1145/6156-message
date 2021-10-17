@@ -6,7 +6,7 @@ def t1():
     res = RDBService.get_by_prefix(
         "imdbfixed", "names_basic", "primary_name", "Tom H"
     )
-    print("t1 resule = ", res)
+    print("t1 results = ", res)
 
 
 def t2():
@@ -14,7 +14,7 @@ def t2():
     res = RDBService.find_by_template(
         "imdbfixed", "name_basics", {"primaryName": "Tom Hanks"}, None
     )
-    print("t2 resuls = ", res)
+    print("t2 results = ", res)
 
 
 def t3():
