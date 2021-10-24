@@ -7,9 +7,8 @@ from datetime import datetime
 import utils.rest_utils as rest_utils
 
 
-from application_services.imdb_artists_resource import IMDBArtistResource
+# from application_services.imdb_artists_resource import IMDBArtistResource
 from application_services.MessageResource.message_service import MessageService
-from application_services.UsersResource.user_service import UserResource
 from database_services.RDBService import RDBService as RDBService
 
 logging.basicConfig(level=logging.DEBUG)
@@ -63,12 +62,8 @@ def get_conversation(inbox=None):
 # Return all conversation in the inbox for a given user
 @app.route("/api/message/<user>", methods=["GET"])
 def get_inbox(user):
-
-    # logger.log("/api/event-participant/ received/returned:\n", res.to_json())
-    # rsp = Response(json.dumps(res), status=200, content_type="application/json")
-
     res = MessageService.get_inbox_for_user(user)
-    print("[app.get_inbox] returned: ", res)
+    logger.log("/api/message/<inbox> received/returned:\n", res.to_json())
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
@@ -77,11 +72,11 @@ def hello_world():
     return '<u>Hello World!</u>'
 
 
-@app.route('/imdb/artists/<prefix>')
-def get_artists_by_prefix(prefix):
-    res = IMDBArtistResource.get_by_name_prefix(prefix)
-    rsp = Response(json.dumps(res), status=200, content_type="application/json")
-    return rsp
+# @app.route('/imdb/artists/<prefix>')
+# def get_artists_by_prefix(prefix):
+#     res = IMDBArtistResource.get_by_name_prefix(prefix)
+#     rsp = Response(json.dumps(res), status=200, content_type="application/json")
+#     return rsp
 
 
 #
