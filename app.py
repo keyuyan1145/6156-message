@@ -34,40 +34,97 @@ def health_check():
 # The method take any REST request, and produces a response indicating what
 # the parameters, headers, etc. are. This is simply for education purposes.
 
-# Return all messages associated with a given conversation/inbox
-@app.route("/api/message/inbox/<inbox>", methods=["GET", "POST", "DELETE"])
-def get_conversation(inbox=None):
-    """
-    Returns a JSON object containing a description of the received request.
 
-    :param inbox: inbox ID
-    :return: JSON document containing information about the request.
-    """
+# # Return all conversation in the inbox for a given user
+# @app.route("/api/messages/users/<user>", methods=["GET", "POST", "DELETE"])
+# def get_inbox(user=None):
+#     """
+#     Returns a JSON object containing the record of the received request.
+#
+#     :param user: user ID
+#     :return: JSON document containing information about the request.
+#     """
+#
+#     res = MessageService.get_inbox_for_user(user)
+#     logger.log("/api/messages/users/<user> received/returned:\n", res.to_json())
+#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
 
+
+# Return all messages
+@app.route("/api/messages/", methods=["GET"])
+def get_all_inbox():
+    res = MessageService.get_all_inbox()
+    # logger.log("/api/messages/ received/returned")
+    return Response(json.dumps(res, default=str), status=200, content_type="application/json")
+    # return rsp
+
+
+# Return all basic info associated with a given conversation
+@app.route("/api/messages/<inbox_id>", methods=["GET"])
+def get_inbox_by_id(inbox_id):
     # TODO -- We should wrap with an exception pattern.
 
     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
-    inputs = rest_utils.RESTContext(request, {"inbox": inbox})
+    inputs = rest_utils.RESTContext(request, {"inbox_id": inbox_id})
 
-    r_json = inputs.to_json()
     msg = {
         "/get_conversation received the following inputs": inputs.to_json()
     }
-    logger.log("/api/message/inbox/<inbox> received/returned:\n", msg)
+    # print(msg)
+    # logger.log("/api/message/<messagesId> received/returned:\n", msg)
 
-    rsp = Response(json.dumps(msg), status=200, content_type="application/json")
-    return rsp
-
-
-# Return all conversation in the inbox for a given user
-@app.route("/api/message/<user>", methods=["GET"])
-def get_inbox(user):
-    res = MessageService.get_inbox_for_user(user)
-    logger.log("/api/message/<inbox> received/returned:\n", res.to_json())
+    res = MessageService.get_inbox_by_id(inbox_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
-@app.route('/hello')
+
+# # Return all msgs in a given inbox
+# @app.route("/api/messages/<inbox_id>/msgs", methods=["GET"])
+# def get_msg_by_inbox(inbox_id):
+#     # TODO -- We should wrap with an exception pattern.
+#
+#     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
+#     inputs = rest_utils.RESTContext(request, {"inbox_id": inbox_id})
+#
+#     msg = {
+#         "/get_conversation received the following inputs": inputs.to_json()
+#     }
+#     # logger.log("/api/message/<messagesId> received/returned:\n", msg)
+#
+#     res = MessageService.get_msg_by_inbox(inbox_id)
+#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
+
+
+# # Return the all conversations for an user
+# @app.route("/api/messages/users/<user_id>", methods=["GET"])
+# def get_inbox_by_user(user_id):
+#     # TODO -- We should wrap with an exception pattern.
+#
+#     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
+#     # inputs = rest_utils.RESTContext(request, {"user_id": user_id})
+#
+#     # msg = {
+#     #     "/get_conversation received the following inputs": inputs.to_json()
+#     # }
+#     # logger.log("/api/message/<messagesId> received/returned:\n", msg)
+#
+#     res = MessageService.get_inbox_by_user(user_id)
+#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
+
+
+
+# Return individual messages or 1 message based on msg_id
+# @app.route("/api/messages/contents/msg_id", methods=["GET"])
+# def get_inbox(msg_id=None):
+#     res = MessageService.get_all_messages()
+#     logger.log("/api/messages/ received/returned:\n", res.to_json())
+#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
+#     return rsp
+
+@app.route('/')
 def hello_world():
     return '<u>Hello World!</u>'
 
