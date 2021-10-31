@@ -120,3 +120,18 @@ class RDBService:
 
         res = RDBService._run_sql(sql_stmt, args)
         return res
+
+    @classmethod
+    def delete(cls, db_schema, table_name, field_list):
+
+        wc, args = RDBService.get_where_clause_args(field_list)
+
+        conn = RDBService._get_db_connection()
+        cur = conn.cursor()
+
+        sql = "delete from " + db_schema + "." + table_name + " " + wc
+        print("[delete] sql: ", sql)
+        res = cur.execute(sql, args=args)
+
+        conn.close()
+        return res

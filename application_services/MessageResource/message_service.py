@@ -15,25 +15,16 @@ class MessageService(BaseRDBApplicationResource):
     def get_data_resource_info(cls):
         pass
 
-
     @classmethod
-    def get_inbox_for_user(cls, user):
-        # sql = f'select * from chat.msgInbox where user1={user} or user2={user}'
-        # conn = RDBService._get_db_connection()
-        # # print('got conn')
-        # cur = conn.cursor()
-        # res = cur.execute(sql)
-        # # print("performed execution")
-        # res = cur.fetchall()
-        # # print('[MessageService.get_inbox_for_user] res: ', res)
-        # wc, args = RDBService.find_by_template()
-        # sql = "select * from aaaaF21.users left join aaaaF21.addresses on " + \
-        #         "aaaaF21.primary_address_id = aaaaF21.addresses.id"
-        #
-        # res = RDBService.run_sql(sql, args, fetch=True)
-        # return res
-        pass
-
+    def get_inbox_msg_for_users(cls, cur_user, other_user):
+        user1 = min(cur_user, other_user)
+        user2 = max(cur_user, other_user)
+        fields = {'user1': user1, 'user2': user2}
+        res1 = RDBService.find_by_template('chat', 'inbox', fields)
+        # print("res : ", res1)
+        # res = RDBService.find_by_template('chat', 'msg', {'inbox': res1['inboxId']})
+        # print('[get_inbox_msg_for_user] res:', res)
+        return res1[0]['inboxId']
 
     @classmethod
     def get_all_inbox(cls):
@@ -43,15 +34,13 @@ class MessageService(BaseRDBApplicationResource):
         return RDBService.find_by_template('chat', 'inbox')
 
     @classmethod
-    def get_inbox_by_id(cls, inbox_id):
-        return RDBService.find_by_template('chat', 'inbox', {'inboxId': inbox_id})
+    def get_msg_by_id(cls, msg_id):
+        if msg_id:
+            return RDBService.find_by_template('chat', 'msg', {'msgId': msg_id})
+        else:
+            return RDBService.find_by_template('chat', 'msg')
 
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):
-        # return RDBService.find_by_template('chat', 'messages', {'inboxId': inbox_id})
-        # TODO: construct inner join
-        pass
+        return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id})
 
-    @classmethod
-    def get_inbox_by_user(cls, user_id):
-        return RDBService.find_by_template('chat', 'messages', {'inboxId': user_id})

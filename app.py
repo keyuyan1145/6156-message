@@ -1,4 +1,4 @@
-from flask import Flask, Response, request
+from flask import Flask, Response, request, redirect, url_for, sessions
 from flask_cors import CORS
 import json
 import logging
@@ -20,6 +20,10 @@ CORS(app)
 
 ##################################################################################################################
 
+@app.route('/')
+def hello_world():
+    return '<u>Hello World!</u>'
+
 # DFF TODO A real service would have more robust health check methods.
 # This path simply echoes to check that the app is working.
 # The path is /health and the only method is GETs
@@ -27,61 +31,104 @@ CORS(app)
 def health_check():
     rsp_data = {"status": "healthy", "time": str(datetime.now())}
     rsp_str = json.dumps(rsp_data)
-    rsp = Response(rsp_str, status=200, content_type="app/json")
+    rsp = Response(rsp_str, status=200, content_type="application/json")
     return rsp
 
 
-# The method take any REST request, and produces a response indicating what
-# the parameters, headers, etc. are. This is simply for education purposes.
-
-
-# # Return all conversation in the inbox for a given user
-# @app.route("/api/messages/users/<user>", methods=["GET", "POST", "DELETE"])
-# def get_inbox(user=None):
-#     """
-#     Returns a JSON object containing the record of the received request.
-#
-#     :param user: user ID
-#     :return: JSON document containing information about the request.
-#     """
-#
-#     res = MessageService.get_inbox_for_user(user)
-#     logger.log("/api/messages/users/<user> received/returned:\n", res.to_json())
-#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-#     return rsp
-
-
-# Return all messages
-@app.route("/api/messages/", methods=["GET"])
+# Return all inboxes if admin role else return inboxes related to user
+@app.route("/api/inbox/", methods=["GET", "POST", "DELETE"])
 def get_all_inbox():
-    res = MessageService.get_all_inbox()
+    res = None
+    scode = None
+    if request.method == 'POST':
+        scode = 201
+        pass
+    elif request.method == "DELETE":
+        scode = 204
+        pass
+    elif request.method == 'GET':
+        res = MessageService.get_all_inbox()
+        scode = 200
+    else:
+        scode = 405
+        pass #invalid method calls
+
     # logger.log("/api/messages/ received/returned")
+    if res:
+        return Response(json.dumps(res, default=str), status=scode, content_type="application/json")
+    else:
+        return Response(status=scode)
+
+
+# Return individual messages is current user has access to inbox or if admin
+@app.route("/api/msg/<msg_id>", methods=["GET", "DELETE"])
+@app.route("/api/msg/", methods=["GET"])
+def get_msg_by_id(msg_id=None):
+    res = None
+    scode = None
+    if request.method == 'GET':
+        res = MessageService.get_msg_by_id(msg_id)
+        scode = 200
+    elif request.method == 'DELETE':
+        pass
+    else:
+        pass #invalid method calls
+
+    # logger.log("/api/messages/ received/returned:\n", res.to_json())
+    rsp = Response(json.dumps(res, default=str), status=scode, content_type="application/json")
+    return rsp
+
+# TODO: need this?
+# Return all msgs in the inbox for a pair of users (NOT valid for admin role)
+@app.route("/api/inbox/user/<user_id>/msg", methods=["GET", "POST", "DELETE"])
+def get_inbox_msg_for_users(user_id=None):
+    res = None
+    scode = None
+    if not user_id:
+        return redirect(url_for('get_all_inbox'))
+    if request.method == 'GET':
+        inbox = MessageService.get_inbox_msg_for_users(1, int(user_id))
+        # print('found inbox_id = ', inbox)
+        return redirect(url_for('get_msg_by_index', inbox_id = inbox))
+    elif request.method == 'POST':
+        pass
+    elif request.method == 'DELETE':
+        pass
+    else:
+        pass #invalid method calls
+
+    # logger.log("/api/messages/users/<user> received/returned:\n", res.to_json())
     return Response(json.dumps(res, default=str), status=200, content_type="application/json")
-    # return rsp
 
+# TODO: create tmp data for all the inbox and msg that a given user is able to access?
+    # avoid checking authentication on every message page
 
-# Return all basic info associated with a given conversation
-@app.route("/api/messages/<inbox_id>", methods=["GET"])
-def get_inbox_by_id(inbox_id):
-    # TODO -- We should wrap with an exception pattern.
+# Return all msgs in a conversation if admin or if current user involved in the inbox
+@app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "POST", "DELETE"])
+def get_msg_by_index(inbox_id):
+    res = None
+    scode = None
+    if request.method == 'GET':
+        res = MessageService.get_msg_by_inbox(inbox_id)
+        pass
+    elif request.method == 'POST':
+        pass
+    elif request.method == 'DELETE':
+        pass
+    else:
+        # invalid method
+        pass
 
-    # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
-    inputs = rest_utils.RESTContext(request, {"inbox_id": inbox_id})
-
-    msg = {
-        "/get_conversation received the following inputs": inputs.to_json()
-    }
-    # print(msg)
-    # logger.log("/api/message/<messagesId> received/returned:\n", msg)
-
-    res = MessageService.get_inbox_by_id(inbox_id)
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
 
-# # Return all msgs in a given inbox
-# @app.route("/api/messages/<inbox_id>/msgs", methods=["GET"])
-# def get_msg_by_inbox(inbox_id):
+# -----------------------------------------------------------------------------------------
+# EXAMPLEs:
+
+# #Return all msgs in a conversation if admin or if current user involved in the inbox
+# @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "POST", "DELETE"])
+# def get_inbox_by_id(inbox_id):
 #     # TODO -- We should wrap with an exception pattern.
 #
 #     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
@@ -90,44 +137,12 @@ def get_inbox_by_id(inbox_id):
 #     msg = {
 #         "/get_conversation received the following inputs": inputs.to_json()
 #     }
+#     # print(msg)
 #     # logger.log("/api/message/<messagesId> received/returned:\n", msg)
 #
-#     res = MessageService.get_msg_by_inbox(inbox_id)
+#     res = MessageService.get_inbox_by_id(inbox_id)
 #     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 #     return rsp
-
-
-# # Return the all conversations for an user
-# @app.route("/api/messages/users/<user_id>", methods=["GET"])
-# def get_inbox_by_user(user_id):
-#     # TODO -- We should wrap with an exception pattern.
-#
-#     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
-#     # inputs = rest_utils.RESTContext(request, {"user_id": user_id})
-#
-#     # msg = {
-#     #     "/get_conversation received the following inputs": inputs.to_json()
-#     # }
-#     # logger.log("/api/message/<messagesId> received/returned:\n", msg)
-#
-#     res = MessageService.get_inbox_by_user(user_id)
-#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-#     return rsp
-
-
-
-# Return individual messages or 1 message based on msg_id
-# @app.route("/api/messages/contents/msg_id", methods=["GET"])
-# def get_inbox(msg_id=None):
-#     res = MessageService.get_all_messages()
-#     logger.log("/api/messages/ received/returned:\n", res.to_json())
-#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-#     return rsp
-
-@app.route('/')
-def hello_world():
-    return '<u>Hello World!</u>'
-
 
 # @app.route('/imdb/artists/<prefix>')
 # def get_artists_by_prefix(prefix):
@@ -143,6 +158,7 @@ def hello_world():
 #     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
 #     return rsp
 
+# --------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
