@@ -84,15 +84,35 @@ class RDBService:
         return clause, args
 
     @classmethod
-    def find_by_template(cls, db_schema, table_name, template=None, field_list=None):
+    def get_sort_clause(cls, fields):
+
+        terms = []
+        clause = None
+
+        for k, v in fields.items():
+            terms.append(k + " " + v)
+        clause = " order by " + ",".join(terms)
+
+        print(clause)
+        return clause
+
+    @classmethod
+    def find_by_template(cls, db_schema, table_name, template=None, res_field=None, sort=None):
 
         wc, args = RDBService.get_where_clause_args(template)
+        if res_field:
+            res_attr = ",".joins(res_field)
+        else:
+            res_attr = "*"
 
         conn = RDBService._get_db_connection()
         cur = conn.cursor()
 
-        sql = "select * from " + db_schema + "." + table_name + " " + wc
-        print("[find_by_template] sql: ", sql)
+        sql = "select " + res_attr + " from " + db_schema + "." + table_name + " " + wc
+        # print("[find_by_template] sql: ", sql)
+        if sort:
+            sql += RDBService.get_sort_clause(sort)
+
         res = cur.execute(sql, args=args)
         res = cur.fetchall()
 
@@ -118,7 +138,9 @@ class RDBService:
         sql_stmt = "insert into " + db_schema + "." + table_name + " " + cols_clause + \
                    " " + vals_clause
 
-        res = RDBService._run_sql(sql_stmt, args)
+        print('[create] sql_stmt: ', sql_stmt)
+
+        res = RDBService.run_sql(sql_stmt, args)
         return res
 
     @classmethod

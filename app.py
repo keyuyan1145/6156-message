@@ -6,7 +6,6 @@ from datetime import datetime
 
 import utils.rest_utils as rest_utils
 
-
 # from application_services.imdb_artists_resource import IMDBArtistResource
 from application_services.MessageResource.message_service import MessageService
 from database_services.RDBService import RDBService as RDBService
@@ -18,11 +17,13 @@ logger.setLevel(logging.INFO)
 app = Flask(__name__)
 CORS(app)
 
+
 ##################################################################################################################
 
 @app.route('/')
 def hello_world():
     return '<u>Hello World!</u>'
+
 
 # DFF TODO A real service would have more robust health check methods.
 # This path simply echoes to check that the app is working.
@@ -41,6 +42,11 @@ def get_all_inbox():
     res = None
     scode = None
     if request.method == 'POST':
+        # TODO: testing data validation. If a field is not null in db and invalid data, there is a default
+        userA = 1
+        userB = request.form['other_user']
+        res = MessageService.post_inbox(userA, userB)
+        print("[post_new_inbox] res", res)
         scode = 201
         pass
     elif request.method == "DELETE":
@@ -51,7 +57,7 @@ def get_all_inbox():
         scode = 200
     else:
         scode = 405
-        pass #invalid method calls
+        pass  # invalid method calls
 
     # logger.log("/api/messages/ received/returned")
     if res:
@@ -72,11 +78,12 @@ def get_msg_by_id(msg_id=None):
     elif request.method == 'DELETE':
         pass
     else:
-        pass #invalid method calls
+        pass  # invalid method calls
 
     # logger.log("/api/messages/ received/returned:\n", res.to_json())
     rsp = Response(json.dumps(res, default=str), status=scode, content_type="application/json")
     return rsp
+
 
 # TODO: need this?
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
@@ -88,20 +95,20 @@ def get_inbox_msg_for_users(user_id=None):
         return redirect(url_for('get_all_inbox'))
     if request.method == 'GET':
         inbox = MessageService.get_inbox_msg_for_users(1, int(user_id))
-        # print('found inbox_id = ', inbox)
-        return redirect(url_for('get_msg_by_index', inbox_id = inbox))
+        return redirect(url_for('get_msg_by_index', inbox_id=inbox))
     elif request.method == 'POST':
         pass
     elif request.method == 'DELETE':
         pass
     else:
-        pass #invalid method calls
+        pass  # invalid method calls
 
     # logger.log("/api/messages/users/<user> received/returned:\n", res.to_json())
     return Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
+
 # TODO: create tmp data for all the inbox and msg that a given user is able to access?
-    # avoid checking authentication on every message page
+# avoid checking authentication on every message page
 
 # Return all msgs in a conversation if admin or if current user involved in the inbox
 @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "POST", "DELETE"])
