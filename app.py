@@ -47,17 +47,50 @@ def get_all_inbox():
         userB = request.form['other_user']
         res = MessageService.post_inbox(userA, userB)
         print("[post_new_inbox] res", res)
-        scode = 201
-        pass
+        scode = None
+        if res == 1:
+            # Created Success!
+            scode = 201
+            rsp = Response('Inbox Created Success!', status=scode)
+            print("rsp:", rsp)
+            return rsp
     elif request.method == "DELETE":
-        scode = 204
-        pass
+
+        userA = 1
+        userB = request.form['other_user']
+        res = MessageService.delete_inbox(userA, userB)
+        print("res: ", res)
+        if res == 1:
+            # Deleted Success!
+            scode = 204
+            rsp = Response(status=scode)
+            return rsp
+        elif res == 0:
+            # Deletion Failed
+            scode = 404
+            rsp = Response('Inbox Not Existed!', status=scode)
+            return rsp
     elif request.method == 'GET':
-        res = MessageService.get_all_inbox()
-        scode = 200
+        inbox_list = MessageService.get_all_inbox()
+        inbox_users = []
+        for inbox in inbox_list:
+            print("inbox: ", inbox)
+            inbox.pop('createdOn')
+            inbox_users.append(inbox)
+        print("users: ", inbox_users)
+        if len(inbox_users) > 0:
+            res = json.dumps(inbox_users)
+            print("res: ", res)
+            scode = 200
+            rsp = Response(json.dumps(inbox_users), status=scode)
+        else:
+            scode = 404
+            rsp = Response('Inbox Not Found!', status=scode)
+        return rsp
     else:
         scode = 405
-        pass  # invalid method calls
+        rsp = Response('Invalid method calls!', status=scode)  # invalid method calls
+        return rsp
 
     # logger.log("/api/messages/ received/returned")
     if res:
@@ -72,13 +105,26 @@ def get_all_inbox():
 def get_msg_by_id(msg_id=None):
     res = None
     scode = None
+    msg_id = request.args.get('msgId')
     if request.method == 'GET':
         res = MessageService.get_msg_by_id(msg_id)
-        scode = 200
-    elif request.method == 'DELETE':
+        if len(res) > 0:
+            scode = 200
+        else:
+            scode = 404
+            rsp = Response('Message Not Found!', status=scode)
+            return rsp
+    elif request.method == 'DELETE': # TODO: need this?
+        # res = MessageService.delete_msg_by_id(msg_id)
+        # print('res:',res)
+        # scode = 204
+        # rsp = Response(status=scode)
+        # return rsp
         pass
     else:
-        pass  # invalid method calls
+        scode = 405
+        rsp = Response('Invalid method calls!', status=scode)  # invalid method calls
+        return rsp
 
     # logger.log("/api/messages/ received/returned:\n", res.to_json())
     rsp = Response(json.dumps(res, default=str), status=scode, content_type="application/json")
@@ -95,6 +141,10 @@ def get_inbox_msg_for_users(user_id=None):
         return redirect(url_for('get_all_inbox'))
     if request.method == 'GET':
         inbox = MessageService.get_inbox_msg_for_users(1, int(user_id))
+        if len(inbox) <= 0:
+            scode = 404
+            rsp = Response('Message Not Found!', status=scode)
+            return rsp
         return redirect(url_for('get_msg_by_index', inbox_id=inbox))
     elif request.method == 'POST':
         pass
@@ -168,4 +218,4 @@ def get_msg_by_index(inbox_id):
 # --------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5050)

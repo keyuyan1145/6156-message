@@ -38,12 +38,22 @@ class MessageService(BaseRDBApplicationResource):
         return RDBService.create('chat', 'inbox', {'user1': str(userA), 'user2': str(userB)})
 
     @classmethod
+    def delete_inbox(cls, userA=None, userB=None):
+        # user1 = min(userA, userB)
+        # user2 = max(userA, userB)
+        return RDBService.delete('chat', 'inbox', {'user1': str(userA), 'user2': str(userB)})
+
+    @classmethod
     def get_msg_by_id(cls, msg_id):
         fields = SELECT_FIELDS_BY_ROUTE['msg']
         if msg_id:
             return RDBService.find_by_template('chat', 'msg', {'msgId': msg_id}, res_field=fields)
         else:
             return RDBService.find_by_template('chat', 'msg', res_field=fields)
+
+    @classmethod
+    def delete_msg_by_id(cls, msg_id):
+        return RDBService.delete('chat', 'msg', {'msgId': msg_id})
 
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):
