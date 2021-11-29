@@ -21,7 +21,12 @@ class MessageService(BaseRDBApplicationResource):
         user2 = max(cur_user, other_user)
         fields = {'user1': user1, 'user2': user2}
         res1 = RDBService.find_by_template('chat', 'inbox', fields)
-        return res1[0]['inboxId']
+        print('res: ', res1)
+        if not res1:
+            print('inbox not existed between these users.')
+            return -99
+        else:
+            return res1[0]['inboxId']
 
     @classmethod
     def get_all_inbox(cls):
@@ -60,3 +65,12 @@ class MessageService(BaseRDBApplicationResource):
         fields = SELECT_FIELDS_BY_ROUTE['msg']
         return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id}, res_field=fields, sort={'timestamp': 'asc'})
 
+    @classmethod
+    def delete_msg_by_inbox(cls, inbox_id):
+        # fields = SELECT_FIELDS_BY_ROUTE['msg']
+        # return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id}, res_field=fields, sort={'timestamp': 'asc'})
+        return RDBService.delete('chat', 'msg', {'inbox': inbox_id})
+
+    @classmethod
+    def post_msg_by_inbox(cls, inbox_id, sender, message):
+        return RDBService.create('chat', 'msg', {'inbox': int(inbox_id), 'sender': int(sender), 'msg': message})

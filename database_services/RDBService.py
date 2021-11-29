@@ -82,7 +82,7 @@ class RDBService:
 
             clause = " where " + " AND ".join(terms)
 
-        print(clause)
+        print('where clause: ', clause)
         return clause, args
 
     @classmethod
@@ -113,6 +113,7 @@ class RDBService:
 
         sql = "select " + res_attr + " from " + db_schema + "." + table_name + " " + wc
         print("[find_by_template] sql: ", sql)
+        print('args: ', args)
         if sort:
             sql += RDBService.get_sort_clause(sort)
 
