@@ -28,8 +28,10 @@ class MessageService(BaseRDBApplicationResource):
         # res = RDBService.find_by_template('chat', 'messages')
         # print('[MessageService.get_all_messages] res: ', res)
         # return res
-        fields = SELECT_FIELDS_BY_ROUTE['inbox']
-        return RDBService.find_by_template('chat', 'inbox', res_field=fields)
+        # fields = SELECT_FIELDS_BY_ROUTE['inbox']
+        # return RDBService.find_by_template('chat', 'inbox', res_field=fields)
+        return RDBService.find_by_template('chat', 'inbox')
+
 
     @classmethod
     def post_inbox(cls, userA=None, userB=None):
