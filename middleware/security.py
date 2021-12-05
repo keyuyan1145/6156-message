@@ -4,7 +4,7 @@ unsecure_path = {
     '/health': ['GET'],
     '/': ['GET'],
     '/favicon.ico': ['GET'],
-    '/login': ['GET']
+    '/login': ['GET']           # TODO: link auth.html with /login
 }
 
 

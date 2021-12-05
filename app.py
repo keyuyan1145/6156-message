@@ -41,7 +41,7 @@ CORS(app)
 @app.before_request
 def before_request_func():
     print("running before_request_func")
-    if not security.check_security(request, session) and not google.authorized:
+    if not security.check_security(request, session):
         return render_template('auth-err.html')
 
 @app.after_request
