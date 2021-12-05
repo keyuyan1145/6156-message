@@ -1,6 +1,7 @@
 from application_services.BaseApplicationResource import BaseRDBApplicationResource
 from database_services.RDBService import RDBService
 from utils.select_fields_by_route import SELECT_FIELDS_BY_ROUTE
+from dynamo import dynamodb
 
 class MessageService(BaseRDBApplicationResource):
 
@@ -20,13 +21,15 @@ class MessageService(BaseRDBApplicationResource):
         user1 = min(cur_user, other_user)
         user2 = max(cur_user, other_user)
         fields = {'user1': user1, 'user2': user2}
-        res1 = RDBService.find_by_template('chat', 'inbox', fields)
+        # res1 = RDBService.find_by_template('chat', 'inbox', fields)
+        res1 = dynamodb.find_by_template('inbox', fields)
         print('res: ', res1)
         if not res1:
             print('inbox not existed between these users.')
             return -99
         else:
-            return res1[0]['inboxId']
+            print(type(res1))
+            return res1['Items'][0]['inboxId']
 
     @classmethod
     def get_all_inbox(cls):
@@ -74,3 +77,5 @@ class MessageService(BaseRDBApplicationResource):
     @classmethod
     def post_msg_by_inbox(cls, inbox_id, sender, message):
         return RDBService.create('chat', 'msg', {'inbox': int(inbox_id), 'sender': int(sender), 'msg': message})
+
+
