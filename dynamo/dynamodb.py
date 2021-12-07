@@ -123,6 +123,23 @@ def add_message(table_name, inbox_id, sender, message):
 
 #how to do filter expressions
 def find_by_template(table_name, template):
+    print('template:  ', template)
+    print('template.items:  ', template.items)
+
+
+    fe = ' AND '.join(['{0}=:{0}'.format(k) for k, v in template.items()])
+    ea = {':{}'.format(k):v for k, v in template.items()}
+
+    tbl = dynamodb.Table(table_name)
+    result = tbl.scan(
+        FilterExpression=fe,
+        ExpressionAttributeValues=ea
+    )
+    return result
+
+def find_by_template_new(table_name, template):
+    print('template:  ', template)
+    print('template.items:  ', template.items)
 
 
     fe = ' AND '.join(['{0}=:{0}'.format(k) for k, v in template.items()])
