@@ -35,9 +35,9 @@ def health_check():
     rsp = Response(rsp_str, status=200, content_type="application/json")
     return rsp
 
-#get_all_inbox/POST: 在userA和userB之间创建message inbox
-#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed
-#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed
+#get_all_inbox/POST: 在userA和userB之间创建message inbox TODO: dynamo
+#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed TODO: dynamo
+#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO: dynamo
 @app.route("/api/inbox/", methods=["GET", "POST", "DELETE"])
 def get_all_inbox():
     res = None
@@ -99,8 +99,8 @@ def get_all_inbox():
     else:
         return Response(status=scode)
 
-#get_msg_by_id/GET: 根据msgId获取对应msg
-#get_msg_by_id/DELETE: 根据msgId删除对应msg
+#get_msg_by_id/GET: 根据msgId获取对应msg TODO: dynamo
+#get_msg_by_id/DELETE: 根据msgId删除对应msg TODO: dynamo
 # Return individual messages is current user has access to inbox or if admin
 # @app.route("/api/msg/<msg_id>", methods=["GET", "DELETE"])
 @app.route("/api/msg/", methods=["GET", "DELETE"])
@@ -143,7 +143,8 @@ def get_msg_by_id(msg_id=None):
     return rsp
 
 
-# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg
+# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg TODO: dynamo(half DONE)
+# get_inbox_msg_for_users/POST: create message for userA&userB TODO: dynamo
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
 @app.route("/api/inbox/user/<user_id>/msg", methods=["GET", "POST"])
 def get_inbox_msg_for_users(user_id=None):
@@ -225,6 +226,7 @@ def get_inbox_msg_for_users(user_id=None):
 # avoid checking authentication on every message page
 
 #TODO: 这里如何通过index获得inboxId？
+# get_msg_by_index(inbox_id)"GET": 通过inboxid获取这个inbox里面的所有message TODO:dynamo
 # Return all msgs in a conversation if admin or if current user involved in the inbox
 @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "DELETE"])
 def get_msg_by_index(inbox_id):
@@ -234,7 +236,7 @@ def get_msg_by_index(inbox_id):
         inbox_id = request.args.get('inboxId')
     if request.method == 'GET':
         res = MessageService.get_msg_by_inbox(inbox_id)
-        print('res:    ', res)
+        print('res here:    ', res)
         if not res:
             scode = 404
             rsp = Response('Message Not Found!', status=scode)

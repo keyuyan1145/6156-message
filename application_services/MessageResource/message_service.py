@@ -37,8 +37,10 @@ class MessageService(BaseRDBApplicationResource):
         # print('[MessageService.get_all_messages] res: ', res)
         # return res
         fields = SELECT_FIELDS_BY_ROUTE['inbox']
-        return RDBService.find_by_template('chat', 'inbox', res_field=fields)
-
+        # return RDBService.find_by_template('chat', 'inbox', res_field=fields)
+        res = dynamodb.find_by_template('inbox', fields)
+        print('res:',res)
+        return res
     @classmethod
     def post_inbox(cls, userA=None, userB=None):
         # user1 = min(userA, userB)
@@ -66,7 +68,8 @@ class MessageService(BaseRDBApplicationResource):
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):
         fields = SELECT_FIELDS_BY_ROUTE['msg']
-        return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id}, res_field=fields, sort={'timestamp': 'asc'})
+        return dynamodb.get_item('user_message',1)
+        # return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id}, res_field=fields, sort={'timestamp': 'asc'})
 
     @classmethod
     def delete_msg_by_inbox(cls, inbox_id):
