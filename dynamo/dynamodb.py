@@ -4,6 +4,10 @@ import json
 from datetime import datetime
 import time
 import uuid
+from decimal import Decimal
+from pprint import pprint
+import boto3
+from botocore.exceptions import ClientError
 
 # There is some weird stuff in DynamoDB JSON responses. These utils work better.
 # I am not using  in this example.
@@ -216,6 +220,70 @@ def write_comment_if_not_changed(new_comment, old_comment):
     )
 
     return res
+
+def delete_item_by_key (table_name, title, year, rating, dynamodb=None):
+    if not dynamodb:
+        dynamodb = boto3.resource('dynamodb',
+                                  aws_access_key_id="AKIA4I37LAIQNHRFY55F",
+                                  aws_secret_access_key="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",
+                                  region_name='us-east-2')
+
+    table = dynamodb.Table(table_name)
+
+    try:
+        response = table.delete_item(
+            Key={
+                'year': year,
+                'title': title
+            }
+            # ConditionExpression="info.rating <= :val",
+            # ExpressionAttributeValues={
+            #     ":val": Decimal(rating)
+            # }
+        )
+    except ClientError as e:
+        if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+            print(e.response['Error']['Message'])
+        else:
+            raise
+    else:
+        return response
+
+def delete_by_key (table_name, key_name, key_value):
+    # if not dynamodb:
+    #     dynamodb = boto3.resource('dynamodb',
+    #                               aws_access_key_id="AKIA4I37LAIQNHRFY55F",
+    #                               aws_secret_access_key="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",
+    #                               region_name='us-east-2')
+
+    table = dynamodb.Table(table_name)
+
+    try:
+        response = table.delete_item(
+            Key={
+                key_name: key_value
+            }
+            # ConditionExpression="info.rating <= :val",
+            # ExpressionAttributeValues={
+            #     ":val": Decimal(rating)
+            # }
+        )
+    except ClientError as e:
+        if e.response['Error']['Code'] == "ConditionalCheckFailedException":
+            print(e.response['Error']['Message'])
+        else:
+            raise
+    else:
+        print('else response: ', response)
+        return response
+
+if __name__ == '__main__':
+    print("Attempting a conditional delete...")
+    delete_response = delete_by_key("inbox", 'inboxId', 1)
+    if delete_response:
+        print("Delete movie succeeded:")
+        pprint(delete_response, sort_dicts=False)
+
 
 """
 

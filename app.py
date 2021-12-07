@@ -37,7 +37,7 @@ def health_check():
 
 #get_all_inbox/POST: 在userA和userB之间创建message inbox TODO: dynamo
 #get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed TODO: dynamo
-#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO: dynamo
+#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO: dynamo DONE
 @app.route("/api/inbox/", methods=["GET", "POST", "DELETE"])
 def get_all_inbox():
     res = None
@@ -59,18 +59,36 @@ def get_all_inbox():
 
         userA = 1
         userB = request.form['other_user']
-        res = MessageService.delete_inbox(userA, userB)
-        print("res: ", res)
-        if res == 1:
-            # Deleted Success!
-            scode = 204
-            rsp = Response('Delete Success!', status=scode)
-            return rsp
-        elif res == 0:
+        # res = MessageService.delete_inbox(userA, userB)
+        inbox = MessageService.get_inbox_msg_for_users(int(userA), int(userB))
+        print('inbox result: ', inbox)
+        if inbox == -99:
             # Deletion Failed
             scode = 404
             rsp = Response('Inbox Not Existed!', status=scode)
             return rsp
+        else:
+            print('Found their inbox!')
+            res1 = MessageService.delete_inbox_dynomo("inbox", 'inboxId', inbox) #删掉了inbox
+            print("res: ", res1)
+
+            res2 = MessageService.delete_usermsg_dynomo("user_message", 'inbox_id', inbox)  # 删掉了user_message
+            print("res: ", res2)
+            message_delete_res = res2['ResponseMetadata']['HTTPStatusCode']
+            print('http res: ', message_delete_res)
+            scode = message_delete_res
+            rsp = Response('Delete Success!', status=scode)
+            return rsp
+        # if res == 1:
+        #     # Deleted Success!
+        #     scode = 204
+        #     rsp = Response('Delete Success!', status=scode)
+        #     return rsp
+        # elif res == 0:
+        #     # Deletion Failed
+        #     scode = 404
+        #     rsp = Response('Inbox Not Existed!', status=scode)
+        #     return rsp
     elif request.method == 'GET':
         inbox_list = MessageService.get_all_inbox()
         inbox_users = []
