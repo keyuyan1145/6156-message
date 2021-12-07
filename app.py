@@ -128,7 +128,7 @@ def get_msg_by_id(msg_id=None):
         elif res <= 0:
             # Deletion Failed
             scode = 404
-            rsp = Response('Message Not Existed!', status=scode)
+            rsp = Responfse('Message Not Existed!', status=scode)
             return rsp
         scode = 204
         rsp = Response(status=scode)
