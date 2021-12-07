@@ -29,6 +29,8 @@ class MessageService(BaseRDBApplicationResource):
             return -99
         else:
             print(type(res1))
+            print(res1['Items'])
+            print(res1['Items'][0])
             return res1['Items'][0]['inboxId']
 
     @classmethod
@@ -67,9 +69,12 @@ class MessageService(BaseRDBApplicationResource):
 
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):
+        print("inbox_id: ", inbox_id)
         fields = SELECT_FIELDS_BY_ROUTE['msg']
-        return dynamodb.get_item('user_message',1)
-        # return RDBService.find_by_template('chat', 'msg', {'inbox': inbox_id}, res_field=fields, sort={'timestamp': 'asc'})
+        return dynamodb.find_by_template("user_message",
+                      {
+                          "inbox_id": int(inbox_id)
+                      })
 
     @classmethod
     def delete_msg_by_inbox(cls, inbox_id):

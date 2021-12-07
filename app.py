@@ -151,8 +151,6 @@ def get_inbox_msg_for_users(user_id=None):
     res = None
     scode = None
     userA = 1
-
-
     if request.method == 'GET':
         user_id = request.args.get('user_id')
         if not user_id:
@@ -226,16 +224,19 @@ def get_inbox_msg_for_users(user_id=None):
 # avoid checking authentication on every message page
 
 #TODO: 这里如何通过index获得inboxId？
-# get_msg_by_index(inbox_id)"GET": 通过inboxid获取这个inbox里面的所有message TODO:dynamo
+# get_msg_by_index(inbox_id)"GET": 通过inboxid获取这个inbox里面的所有message TODO:dynamo -> done
 # Return all msgs in a conversation if admin or if current user involved in the inbox
 @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "DELETE"])
 def get_msg_by_index(inbox_id):
     res = None
     scode = None
+    # inbox_id = request.args.get('inboxId') #TODO: delete it
     if inbox_id is None:
         inbox_id = request.args.get('inboxId')
     if request.method == 'GET':
+        # print('inboxhhhhhh: ', inbox_id)
         res = MessageService.get_msg_by_inbox(inbox_id)
+
         print('res here:    ', res)
         if not res:
             scode = 404
