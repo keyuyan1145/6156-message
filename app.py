@@ -67,9 +67,9 @@ def get_all_inbox():
 
 
 # Return individual messages is current user has access to inbox or if admin
-@app.route("/api/msg/<msg_id>", methods=["GET", "DELETE"])
-@app.route("/api/msg/", methods=["GET"])
-def get_msg_by_id(msg_id=None):
+@app.route("/api/msg/", methods=["GET", "DELETE"])
+def get_msg_by_id():
+    msg_id = request.args.get("msg_id")
     res = None
     scode = None
     if request.method == 'GET':
@@ -87,10 +87,11 @@ def get_msg_by_id(msg_id=None):
 
 # TODO: need this?
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
-@app.route("/api/inbox/user/<user_id>/msg", methods=["GET", "POST", "DELETE"])
-def get_inbox_msg_for_users(user_id=None):
+@app.route("/api/inbox/user/msg", methods=["GET", "POST", "DELETE"])
+def get_inbox_msg_for_users():
     res = None
     scode = None
+    user_id = request.args.get("user_id")
     if not user_id:
         return redirect(url_for('get_all_inbox'))
     if request.method == 'GET':
@@ -107,14 +108,12 @@ def get_inbox_msg_for_users(user_id=None):
     return Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
 
-# TODO: create tmp data for all the inbox and msg that a given user is able to access?
-# avoid checking authentication on every message page
-
 # Return all msgs in a conversation if admin or if current user involved in the inbox
-@app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "POST", "DELETE"])
+@app.route("/api/inbox//msg", methods=["GET", "POST", "DELETE"])
 def get_msg_by_index(inbox_id):
     res = None
     scode = None
+    inbox_id = request.args.get('inbox_id')
     if request.method == 'GET':
         res = MessageService.get_msg_by_inbox(inbox_id)
         pass
