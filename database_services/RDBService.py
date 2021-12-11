@@ -111,6 +111,12 @@ class RDBService:
         conn = RDBService._get_db_connection()
         cur = conn.cursor()
 
+
+        print('res_attr:', res_attr)
+        print('db_schema: ', db_schema)
+        print('table_name: ', table_name)
+        print('wc: ', wc)
+
         sql = "select " + res_attr + " from " + db_schema + "." + table_name + " " + wc
         print("[find_by_template] sql: ", sql)
         print('args: ', args)

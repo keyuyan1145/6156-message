@@ -186,7 +186,7 @@ def get_inbox_msg_for_users(user_id=None):
             scode = 204
             # rsp = Response('Delete Success!', status=scode)
             # return rsp
-            return redirect(url_for('get_msg_by_index', inbox_id=inbox))
+            return redirect(url_for('get_msg_by_inbox', inbox_id=inbox))
     elif request.method == 'POST':
         # POST new message:
         # user A select user B -> post message to user B -> if new conversation, create inbox; if not, add message to this inbox
@@ -247,10 +247,11 @@ def get_inbox_msg_for_users(user_id=None):
 # get_msg_by_index(inbox_id)"GET": 通过inboxid获取这个inbox里面的所有message TODO:dynamo
 # Return all msgs in a conversation if admin or if current user involved in the inbox
 @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "DELETE"])
-def get_msg_by_index(inbox_id):
+def get_msg_by_inbox(inbox_id):
     res = None
     scode = None
-    if inbox_id is None:
+
+    if inbox_id is None or inbox_id == '<inbox_id>':
         inbox_id = request.args.get('inboxId')
     if request.method == 'GET':
         res = MessageService.get_msg_by_inbox(inbox_id)
