@@ -1,4 +1,4 @@
-from flask import Flask, Response, request, redirect, url_for, sessions
+from flask import Flask, Response, request, redirect, url_for, jsonify, sessions
 from flask_cors import CORS
 import json
 import logging
@@ -35,8 +35,8 @@ def health_check():
     rsp = Response(rsp_str, status=200, content_type="application/json")
     return rsp
 
-#get_all_inbox/POST: 在userA和userB之间创建message inbox TODO: dynamo
-#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed TODO: dynamo
+#get_all_inbox/POST: 在userA和userB之间创建message inbox
+#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed
 #get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO: dynamo DONE
 @app.route("/api/inbox/", methods=["GET", "POST", "DELETE"])
 def get_all_inbox():
@@ -90,21 +90,22 @@ def get_all_inbox():
         #     rsp = Response('Inbox Not Existed!', status=scode)
         #     return rsp
     elif request.method == 'GET':
-        # userA = request.session['user_id']
+        # userA = request.sessions['user_id']
         userA = request.args.get("user_id")
         # userB = request.args.get("other_user")
         inbox_list = MessageService.get_oneuser_all_inbox(userA)
-        inbox_users = []
-        for inbox in inbox_list:
-            print("inbox: ", inbox)
-            inbox.pop('createdOn')
-            inbox_users.append(inbox)
-        print("users: ", inbox_users)
-        if len(inbox_users) > 0:
-            res = json.dumps(inbox_users)
-            print("res: ", res)
+        # inbox_users = []
+        # for inbox in inbox_list:
+        #     print("inbox: ", inbox)
+        #     # inbox.pop('createdOn')
+        #     inbox_users.append(inbox)
+        # print("users: ", inbox_users)
+        if len(inbox_list) > 0:
+            # res = json.dumps(inbox_users)
             scode = 200
-            rsp = Response(json.dumps(inbox_users), status=scode)
+            # rsp = Response(json.dumps(inbox_users), status=scode)
+            rsp = Response(json.dumps(inbox_list, indent=4, sort_keys=True, default=str))
+            # rsp = Response(jsonify(inbox_list), status=scode)
         else:
             scode = 404
             rsp = Response('Inbox Not Found!', status=scode)
@@ -120,8 +121,8 @@ def get_all_inbox():
     else:
         return Response(status=scode)
 
-#get_msg_by_id/GET: 根据msgId获取对应msg TODO: dynamo
-#get_msg_by_id/DELETE: 根据msgId删除对应msg TODO: dynamo
+#get_msg_by_id/GET: 根据msgId获取对应msg
+#get_msg_by_id/DELETE: 根据msgId删除对应msg
 # Return individual messages is current user has access to inbox or if admin
 
 @app.route("/api/msg/", methods=["GET", "DELETE"])
@@ -166,8 +167,8 @@ def get_msg_by_id():
     return rsp
 
 
-# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg TODO: dynamo(half DONE)
-# get_inbox_msg_for_users/POST: create message for userA&userB TODO: dynamo
+# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg
+# get_inbox_msg_for_users/POST: create message for userA&userB
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
 
 @app.route("/api/inbox/user/msg", methods=["GET", "POST", "DELETE"])
