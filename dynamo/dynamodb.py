@@ -6,7 +6,6 @@ import time
 import uuid
 from decimal import Decimal
 from pprint import pprint
-import boto3
 from botocore.exceptions import ClientError
 
 # There is some weird stuff in DynamoDB JSON responses. These utils work better.

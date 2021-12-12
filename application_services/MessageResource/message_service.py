@@ -3,7 +3,7 @@ from application_services.BaseApplicationResource import BaseRDBApplicationResou
 from utils.select_fields_by_route import SELECT_FIELDS_BY_ROUTE
 # from dynamo import dynamodb as RDBService
 from database_services.RDBService import RDBService
-
+from dynamo.dynamodb import delete_by_key
 class MessageService(BaseRDBApplicationResource):
 
     def __init__(self):
@@ -77,14 +77,14 @@ class MessageService(BaseRDBApplicationResource):
         # user1 = min(userA, userB)
         # user2 = max(userA, userB)
         # return RDBService.delete('chat', 'inbox', {'user1': str(userA), 'user2': str(userB)})
-        return RDBService.delete_by_key(table_name, key_name, key_value)
+        return delete_by_key(table_name, key_name, key_value)
 
     @classmethod
     def delete_usermsg_dynomo(cls, table_name, key_name, key_value):
         # user1 = min(userA, userB)
         # user2 = max(userA, userB)
         # return RDBService.delete('chat', 'inbox', {'user1': str(userA), 'user2': str(userB)})
-        return RDBService.delete_by_key(table_name, key_name, key_value)
+        return delete_by_key(table_name, key_name, key_value)
 
     @classmethod
     def get_msg_by_id(cls, msg_id):
@@ -96,7 +96,7 @@ class MessageService(BaseRDBApplicationResource):
 
     @classmethod
     def delete_msg_by_id(cls, msg_id):
-        return RDBService.delete_by_key('chat', 'msg', {'msgId': msg_id})
+        return delete_by_key('chat', 'msg', {'msgId': msg_id})
 
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):
