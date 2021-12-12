@@ -49,15 +49,23 @@ class MessageService(BaseRDBApplicationResource):
             return res1[0]['inboxId']
 
     @classmethod
-    def get_all_inbox(cls):
+    def get_all_inbox(cls, user1_id, user2_id):
         # res = RDBService.find_by_template('chat', 'messages')
         # print('[MessageService.get_all_messages] res: ', res)
         # return res
         fields = SELECT_FIELDS_BY_ROUTE['inbox']
-        res = RDBService.find_by_template('chat', 'inbox', res_field=fields)
+        res = RDBService.find_by_template('chat', 'inbox', {'user1': int(user1_id), 'user2': int(user2_id)}, res_field=fields)
         # res = RDBService.find_by_template('inbox', fields)
         print('res:',res)
         return res
+
+    @classmethod
+    def get_oneuser_all_inbox(cls, user1_id):
+        fields = SELECT_FIELDS_BY_ROUTE['inbox']
+        res = RDBService.find_by_or_template('chat', 'inbox', {'user1': int(user1_id), 'user2': int(user1_id)}, res_field=fields)
+        print('res:',res)
+        return res
+
 
     @classmethod
     def post_inbox(cls, userA=None, userB=None):
@@ -95,8 +103,12 @@ class MessageService(BaseRDBApplicationResource):
             return RDBService.find_by_template('chat', 'msg', res_field=fields)
 
     @classmethod
-    def delete_msg_by_id(cls, msg_id):
+    def delete_msg_by_id_dynamo(cls, msg_id):
         return delete_by_key('chat', 'msg', {'msgId': msg_id})
+
+    @classmethod
+    def delete_msg_by_id(cls, msg_id):
+        return RDBService.delete('chat', 'msg', {'msgId': msg_id})
 
     @classmethod
     def get_msg_by_inbox(cls, inbox_id):

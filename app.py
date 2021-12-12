@@ -42,6 +42,7 @@ def health_check():
 def get_all_inbox():
     res = None
     scode = None
+
     if request.method == 'POST':
         # TODO: testing data validation. If a field is not null in db and invalid data, there is a default
         userA = 1
@@ -56,7 +57,6 @@ def get_all_inbox():
             print("rsp:", rsp)
             return rsp
     elif request.method == "DELETE":
-
         userA = 1
         userB = request.form['other_user']
         # res = MessageService.delete_inbox(userA, userB)
@@ -90,7 +90,10 @@ def get_all_inbox():
         #     rsp = Response('Inbox Not Existed!', status=scode)
         #     return rsp
     elif request.method == 'GET':
-        inbox_list = MessageService.get_all_inbox()
+        # userA = request.session['user_id']
+        userA = request.args.get("user_id")
+        # userB = request.args.get("other_user")
+        inbox_list = MessageService.get_oneuser_all_inbox(userA)
         inbox_users = []
         for inbox in inbox_list:
             print("inbox: ", inbox)
@@ -123,7 +126,7 @@ def get_all_inbox():
 
 @app.route("/api/msg/", methods=["GET", "DELETE"])
 def get_msg_by_id():
-    msg_id = request.args.get("msg_id")
+    # msg_id = request.args.get("msg_id")
     res = None
     scode = None
     msg_id = request.args.get('msgId')
@@ -137,6 +140,7 @@ def get_msg_by_id():
             return rsp
     elif request.method == 'DELETE':
         # msg_id = request.form['msgId']
+        print('msg id: ', msg_id)
         res = MessageService.delete_msg_by_id(msg_id)
         print('res: ',res)
         if res > 0:
@@ -171,7 +175,8 @@ def get_inbox_msg_for_users():
     res = None
     scode = None
     user_id = request.args.get("user_id")
-    if not user_id:
+    userA = 1
+    if not user_id and request.method!='POST':
         return redirect(url_for('get_all_inbox'))
     if request.method == 'GET':
         user_id = request.args.get('user_id')
@@ -190,6 +195,7 @@ def get_inbox_msg_for_users():
             # return rsp
             return redirect(url_for('get_msg_by_inbox', inbox_id=inbox))
     elif request.method == 'POST':
+        print('post entered')
         # POST new message:
         # user A select user B -> post message to user B -> if new conversation, create inbox; if not, add message to this inbox
         # select user (userA_id, userB_id) -> choose to post message (user_input)
@@ -198,7 +204,7 @@ def get_inbox_msg_for_users():
         user_id = request.form['user_id']
         message = request.form['message']
         inbox_existed = False
-        print(userA, user_id)
+        print('aaaaaaaa',userA, user_id)
         inbox = MessageService.get_inbox_msg_for_users(int(userA), int(user_id))
         print('inbox result: ', inbox)
         print('inbooooooox')
@@ -277,4 +283,4 @@ def get_msg_by_inbox():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5050)
+    app.run(host="0.0.0.0", port=5000)
