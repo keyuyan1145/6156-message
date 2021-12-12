@@ -23,11 +23,13 @@ class RDBService:
         logger.info("\t HOST = " + db_connect_info['host'])
 
         db_info = context.get_db_info()
+        print(db_info)
 
         db_connection = pymysql.connect(
             **db_info,
             autocommit=True
         )
+        print(db_connection)
         return db_connection
 
     @classmethod
@@ -80,7 +82,7 @@ class RDBService:
 
             clause = " where " + " AND ".join(terms)
 
-        print(clause)
+        print('where clause: ', clause)
         return clause, args
 
     @classmethod
@@ -101,15 +103,23 @@ class RDBService:
 
         wc, args = RDBService.get_where_clause_args(template)
         if res_field:
-            res_attr = ",".joins(res_field)
+            print('res_field:', res_field)
+            res_attr = ",".join(res_field)
         else:
             res_attr = "*"
 
         conn = RDBService._get_db_connection()
         cur = conn.cursor()
 
+
+        print('res_attr:', res_attr)
+        print('db_schema: ', db_schema)
+        print('table_name: ', table_name)
+        print('wc: ', wc)
+
         sql = "select " + res_attr + " from " + db_schema + "." + table_name + " " + wc
-        # print("[find_by_template] sql: ", sql)
+        print("[find_by_template] sql: ", sql)
+        print('args: ', args)
         if sort:
             sql += RDBService.get_sort_clause(sort)
 
@@ -131,6 +141,7 @@ class RDBService:
             cols.append(k)
             vals.append('%s')
             args.append(v)
+
 
         cols_clause = "(" + ",".join(cols) + ")"
         vals_clause = "values (" + ",".join(vals) + ")"
