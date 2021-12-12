@@ -4,6 +4,7 @@ from utils.select_fields_by_route import SELECT_FIELDS_BY_ROUTE
 # from dynamo import dynamodb as RDBService
 from database_services.RDBService import RDBService
 from dynamo.dynamodb import delete_by_key
+from dynamo.dynamodb import put_inbox
 class MessageService(BaseRDBApplicationResource):
 
     def __init__(self):
@@ -85,6 +86,10 @@ class MessageService(BaseRDBApplicationResource):
         # user2 = max(userA, userB)
         # return RDBService.delete('chat', 'inbox', {'user1': str(userA), 'user2': str(userB)})
         return delete_by_key(table_name, key_name, key_value)
+
+    @classmethod
+    def create_inbox_dynomo(cls, user1_id, user2_id, inbox_id):
+        return put_inbox(user1_id, user2_id, inbox_id)
 
     @classmethod
     def get_msg_by_id(cls, msg_id):

@@ -95,6 +95,24 @@ def put_item(table_name, item):
     return res
 
 
+
+
+def put_inbox(user1_id, user2_id, inbox_id):
+    table = dynamodb.Table('inbox')
+    dt = time.time()
+    dts = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(dt))
+    response = table.put_item(
+       Item={
+           'user1': int(user1_id),
+           'user2': int(user2_id),
+           'inboxId': int(inbox_id),
+           "createdOn": dts
+        }
+    )
+    return response
+
+
+
 def add_message(table_name, inbox_id, sender, message):
     table = dynamodb.Table(table_name)
     Key={

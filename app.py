@@ -53,13 +53,15 @@ def get_all_inbox():
             # Created Success!
             scode = 201
             rsp = Response('Inbox Created Success!', status=scode)
+            created_inbox_id = MessageService.get_inbox_msg_for_users(int(userA), int(userB))
+            rsp_dynamo = MessageService.create_inbox_dynomo(int(userA), int(userB), int(created_inbox_id))
+            print('dynamo created result: ', rsp_dynamo)
             print("rsp:", rsp)
             return rsp
     elif request.method == "DELETE":
 
         userA = 1
         userB = request.form['other_user']
-        # res = MessageService.delete_inbox(userA, userB)
         inbox = MessageService.get_inbox_msg_for_users(int(userA), int(userB))
         print('inbox result: ', inbox)
         if inbox == -99:
@@ -78,6 +80,7 @@ def get_all_inbox():
             print('http res: ', message_delete_res)
             scode = message_delete_res
             rsp = Response('Delete Success!', status=scode)
+            res = MessageService.delete_inbox(userA, userB)
             return rsp
         # if res == 1:
         #     # Deleted Success!
