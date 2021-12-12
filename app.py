@@ -123,9 +123,10 @@ def get_all_inbox():
 #get_msg_by_id/GET: 根据msgId获取对应msg TODO: dynamo
 #get_msg_by_id/DELETE: 根据msgId删除对应msg TODO: dynamo
 # Return individual messages is current user has access to inbox or if admin
-# @app.route("/api/msg/<msg_id>", methods=["GET", "DELETE"])
+
 @app.route("/api/msg/", methods=["GET", "DELETE"])
-def get_msg_by_id(msg_id=None):
+def get_msg_by_id():
+    msg_id = request.args.get("msg_id")
     res = None
     scode = None
     msg_id = request.args.get('msgId')
@@ -167,13 +168,14 @@ def get_msg_by_id(msg_id=None):
 # get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg TODO: dynamo(half DONE)
 # get_inbox_msg_for_users/POST: create message for userA&userB TODO: dynamo
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
-@app.route("/api/inbox/user/<user_id>/msg", methods=["GET", "POST"])
-def get_inbox_msg_for_users(user_id=None):
+
+@app.route("/api/inbox/user/msg", methods=["GET", "POST", "DELETE"])
+def get_inbox_msg_for_users():
     res = None
     scode = None
-    userA = 1
-
-
+    user_id = request.args.get("user_id")
+    if not user_id:
+        return redirect(url_for('get_all_inbox'))
     if request.method == 'GET':
         user_id = request.args.get('user_id')
         if not user_id:
@@ -232,7 +234,7 @@ def get_inbox_msg_for_users(user_id=None):
             rsp = Response('Sent Success! New Inbox Created!', status=scode)
             return rsp
 
-    # elif request.method == 'DELETE':
+    elif request.method == 'DELETE':
         pass
     else:
         scode = 405
@@ -243,19 +245,12 @@ def get_inbox_msg_for_users(user_id=None):
     return Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
 
-# TODO: create tmp data for all the inbox and msg that a given user is able to access?
-# avoid checking authentication on every message page
-
-#TODO: 这里如何通过index获得inboxId？
-# get_msg_by_index(inbox_id)"GET": 通过inboxid获取这个inbox里面的所有message TODO:dynamo
 # Return all msgs in a conversation if admin or if current user involved in the inbox
-@app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "DELETE"])
-def get_msg_by_inbox(inbox_id):
+@app.route("/api/inbox/msg", methods=["GET", "POST", "DELETE"])
+def get_msg_by_inbox():
     res = None
     scode = None
-
-    if inbox_id is None or inbox_id == '<inbox_id>':
-        inbox_id = request.args.get('inboxId')
+    inbox_id = request.args.get('inbox_id')
     if request.method == 'GET':
         res = MessageService.get_msg_by_inbox(inbox_id)
         print('res here:    ', res)
@@ -263,9 +258,8 @@ def get_msg_by_inbox(inbox_id):
             scode = 404
             rsp = Response('Message Not Found!', status=scode)
             return rsp
+    elif request.method == 'POST':
         pass
-    # elif request.method == 'POST':
-        # pass
     elif request.method == 'DELETE':
         res = MessageService.delete_msg_by_inbox(inbox_id)
         if res<=0:
@@ -284,43 +278,6 @@ def get_msg_by_inbox(inbox_id):
     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
     return rsp
 
-
-# -----------------------------------------------------------------------------------------
-# EXAMPLEs:
-
-# #Return all msgs in a conversation if admin or if current user involved in the inbox
-# @app.route("/api/inbox/<inbox_id>/msg", methods=["GET", "POST", "DELETE"])
-# def get_inbox_by_id(inbox_id):
-#     # TODO -- We should wrap with an exception pattern.
-#
-#     # Mostly for isolation. The rest of the method is isolated from the specifics of Flask.
-#     inputs = rest_utils.RESTContext(request, {"inbox_id": inbox_id})
-#
-#     msg = {
-#         "/get_conversation received the following inputs": inputs.to_json()
-#     }
-#     # print(msg)
-#     # logger.log("/api/message/<messagesId> received/returned:\n", msg)
-#
-#     res = MessageService.get_inbox_by_id(inbox_id)
-#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-#     return rsp
-
-# @app.route('/imdb/artists/<prefix>')
-# def get_artists_by_prefix(prefix):
-#     res = IMDBArtistResource.get_by_name_prefix(prefix)
-#     rsp = Response(json.dumps(res), status=200, content_type="application/json")
-#     return rsp
-
-
-#
-# @app.route('/<db_schema>/<table_name>/<column_name>/<prefix>')
-# def get_by_prefix(db_schema, table_name, column_name, prefix):
-#     res = RDBService.get_by_prefix(db_schema, table_name, column_name, prefix)
-#     rsp = Response(json.dumps(res, default=str), status=200, content_type="application/json")
-#     return rsp
-
-# --------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5050)
