@@ -3,6 +3,8 @@ from flask_cors import CORS
 import json
 import logging
 from datetime import datetime
+from dynamo.dynamodb import write_comment_if_not_changed,get_item
+import copy
 
 import utils.rest_utils as rest_utils
 
@@ -35,9 +37,9 @@ def health_check():
     rsp = Response(rsp_str, status=200, content_type="application/json")
     return rsp
 
-#get_all_inbox/POST: 在userA和userB之间创建message inbox
-#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed
-#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO: dynamo DONE
+#get_all_inbox/POST: 在userA和userB之间创建message inbox TODO:(4)
+#get_all_inbox/GET: 获取userA和其他用户之间的所有message inbox if existed TODO:(1)
+#get_all_inbox/DELETE: 删除userA和userB之间的message inbox if existed TODO:(6)
 @app.route("/api/inbox/", methods=["GET", "POST", "DELETE"])
 def get_all_inbox():
     res = None
@@ -167,8 +169,8 @@ def get_msg_by_id():
     return rsp
 
 
-# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg
-# get_inbox_msg_for_users/POST: create message for userA&userB
+# get_inbox_msg_for_users/GET: 获取userA和userB的message inbox中的所有msg TODO:(2)
+# get_inbox_msg_for_users/POST: create message for userA&userB TODO:(5)
 # Return all msgs in the inbox for a pair of users (NOT valid for admin role)
 
 @app.route("/api/inbox/user/msg", methods=["GET", "POST", "DELETE"])
@@ -249,7 +251,43 @@ def get_inbox_msg_for_users():
     return Response(json.dumps(res, default=str), status=200, content_type="application/json")
 
 
+
+
+@app.route("/api/write_write", methods=["POST"])
+def write_write_test():
+    res = None
+    scode = None
+    userA = 1
+    print('post entered')
+    # POST new message:
+    # user A select user B -> post message to user B -> if new conversation, create inbox; if not, add message to this inbox
+    # select user (userA_id, userB_id) -> choose to post message (user_input)
+    # -> check whether the inbox existed (inbox_id
+    # -> 1) create inbox -> add message to this inbox; 2) get inbox -> add message to this inbox;
+    user_id = request.form['user_id']
+    message = request.form['message']
+    inbox_existed = False
+
+
+    try:
+        MessageService.write_write(int(userA), int(user_id))
+    except Exception as e:
+        print("Second write exception = ", str(e))
+        response_string = "Second write exception = " + str(e)
+        rsp = Response(response_string)
+        return rsp
+
+
+
+
+
+
+
+
+
+
 # Return all msgs in a conversation if admin or if current user involved in the inbox
+#GET: 通过inboxid获取到这个inbox里面的所有message TODO:(3)
 @app.route("/api/inbox/msg", methods=["GET", "POST", "DELETE"])
 def get_msg_by_inbox():
     res = None
@@ -284,4 +322,4 @@ def get_msg_by_inbox():
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5001)

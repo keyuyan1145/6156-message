@@ -3,7 +3,8 @@ from application_services.BaseApplicationResource import BaseRDBApplicationResou
 from utils.select_fields_by_route import SELECT_FIELDS_BY_ROUTE
 # from dynamo import dynamodb as RDBService
 from database_services.RDBService import RDBService
-from dynamo.dynamodb import delete_by_key
+from dynamo.dynamodb import delete_by_key,write_comment_if_not_changed,get_item
+import copy
 class MessageService(BaseRDBApplicationResource):
 
     def __init__(self):
@@ -126,5 +127,26 @@ class MessageService(BaseRDBApplicationResource):
     @classmethod
     def post_msg_by_inbox(cls, inbox_id, sender, message):
         return RDBService.create('chat', 'msg', {'inbox': int(inbox_id), 'sender': int(sender), 'msg': message})
+
+    @classmethod
+    def write_write(cls, userA, user_id):
+        inbox_id = 1
+        original_inbox = get_item("user_message", {"inbox_id": inbox_id})
+        print('original inbox: ', original_inbox)
+        original_version_id = original_inbox["version_id"]
+        new_inbox = copy.deepcopy(original_inbox)
+
+        try:
+            res = write_comment_if_not_changed(original_inbox, new_inbox)
+            print("First write returned: ", res)
+        except Exception as e:
+            print("First write exception = ", str(e))
+        try:
+            res = write_comment_if_not_changed(original_inbox, new_inbox)
+            print("Second write returned: ", res)
+        except Exception as e:
+            raise e
+
+
 
 

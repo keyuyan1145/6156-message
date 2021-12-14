@@ -75,6 +75,7 @@ def t6():
 
     inbox_id = 1
     original_inbox = db.get_item("user_message",{"inbox_id": inbox_id})
+    print('original inbox: ', original_inbox)
     original_version_id = original_inbox["version_id"]
 
     new_inbox = copy.deepcopy(original_inbox)
@@ -93,10 +94,10 @@ def t6():
 
 
 
-t1()
+# t1()
 # t2()
 # t3()
 # t4()
 #t5()
-# t6()
+t6()
 
